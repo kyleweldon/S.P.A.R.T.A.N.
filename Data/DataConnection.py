@@ -27,7 +27,8 @@ class DataForTraining:
     self.y_validate
     self.y_train
     '''
-    def __init__(self, decision_index):
+    def __init__(self, decision_index, verbose):
+        self.verbose = verbose
         self.decision_index = decision_index
         self.data_for_model_input = 'C:/KyleWeldon/Projects/ThinkTank/S.P.A.R.T.A.N/Data/InputData.txt'
         self.data_for_model_output = 'C:/KyleWeldon/Projects/ThinkTank/S.P.A.R.T.A.N/Data/OutputData.txt'
@@ -89,7 +90,7 @@ class DataForTraining:
 
 
     def __del__(self):
-        print('Object released.')
+        print('DataForTraining object released.')
 
 class ExcelConnection:
     def __init__(self):
@@ -106,8 +107,6 @@ class ExcelConnection:
         if not self.data:
             print('No data obtained from excel file')
             exit(1)
-
-
 
     def write_data_to_file_from_excel(self):
         input_file = open(self.Data_for_model_input, 'w')
