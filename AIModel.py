@@ -46,10 +46,10 @@ class BaseModel(DataForTraining):
         input_4 = Input(shape=input_shape_4, name='input_4')
 
         # Define dense layers for each input
-        dense_1 = Dense(8, activation='relu', kernel_regularizer=regularizers.l2(0.001), name='dense_1')(input_1)
-        dense_2 = Dense(8, activation='relu', kernel_regularizer=regularizers.l2(0.001), name='dense_2')(input_2)
-        dense_3 = Dense(4, activation='relu', kernel_regularizer=regularizers.l2(0.001), name='dense_3')(input_3)
-        dense_4 = Dense(20, activation='relu', kernel_regularizer=regularizers.l2(0.001), name='dense_4')(input_4)
+        dense_1 = Dense(8, activation='relu', name='dense_1')(input_1)
+        dense_2 = Dense(8, activation='relu', name='dense_2')(input_2)
+        dense_3 = Dense(4, activation='relu', name='dense_3')(input_3)
+        dense_4 = Dense(20, activation='relu', name='dense_4')(input_4)
 
         # Concatenate the outputs of the dense layers
         concatenated = concatenate([dense_1, dense_2, dense_3, dense_4])
