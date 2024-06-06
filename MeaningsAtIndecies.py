@@ -8,14 +8,17 @@ def get_input_meanings():
                 2: 'BIG5_CON',
                 3: 'BIG5_NEU',
                 4: 'BIG5_INT',
+
                 5: 'DMS_RAT',
                 6: 'DMS_INT',
                 7: 'DMS_DEP',
                 8: 'DMS_AVO',
                 9: 'DMS_SPO',
+
                 10: 'Satisficing Score',
                 11: 'Dicision Difficulty Score',
                 12: 'Alternative Search Score',
+
                 13: 'Protect Life Under Comand',
                 14: 'Protect Life of Fellow Soldier',
                 15: 'Protect Life of Civilian',

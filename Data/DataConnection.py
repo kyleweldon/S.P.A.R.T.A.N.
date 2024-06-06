@@ -3,9 +3,8 @@
 #############################################
 
 import openpyxl
-import numpy as np
-np.set_printoptions(threshold=np.inf)
-
+import MeaningsAtIndecies
+import pandas as pd
 
 class DataForTraining:
     ###################################################
@@ -17,6 +16,7 @@ class DataForTraining:
 
     self.big5_x_validate
     self.big5_x_train
+
     self.layer2_x_validate
     self.layer2_x_train
     self.layer3_x_validate
@@ -27,7 +27,7 @@ class DataForTraining:
     self.y_validate
     self.y_train
     '''
-    def __init__(self, decision_index, verbose):
+    def __init__(self, decision_index=0, verbose=1):
         self.verbose = verbose
         self.decision_index = decision_index
         self.data_for_model_input = 'C:/KyleWeldon/Projects/ThinkTank/S.P.A.R.T.A.N/Data/InputData.txt'
@@ -46,7 +46,7 @@ class DataForTraining:
             for i in range(228):  # There are 229 lines in both files
                 # Dealing with input data
                 line = input_file_lines[i].strip().split(',')
-                total_inputs = np.array([int(val) for val in line])
+                total_inputs = [int(val) for val in line]
                 temp_input1 = total_inputs[:5]
                 temp_input2 = total_inputs[5:10]
                 temp_input3 = total_inputs[10:13]
@@ -55,7 +55,7 @@ class DataForTraining:
                 # Dealing with output data
                 line = output_file_lines[i].strip().split(',')
                 decision = int(line[self.decision_index])
-                temp_output = np.array([1 if decision == 2 else 0])
+                temp_output = [1 if decision == 2 else 0]
 
                 self.sequential_inputs.append(total_inputs)
                 self.input_layer1.append(temp_input1)
@@ -67,12 +67,12 @@ class DataForTraining:
 
 
         # Convert lists to numpy arrays
-        self.sequential_x_train = np.array(self.sequential_inputs)
-        self.big5_x_train = np.array(self.input_layer1)
-        self.layer2_x_train = np.array(self.input_layer2)
-        self.layer3_x_train = np.array(self.input_layer3)
-        self.layer4_x_train = np.array(self.input_layer4)
-        self.y_train = np.array(self.output_training_data)
+        self.sequential_x_train = self.sequential_inputs
+        self.big5_x_train = self.input_layer1
+        self.layer2_x_train = self.input_layer2
+        self.layer3_x_train = self.input_layer3
+        self.layer4_x_train = self.input_layer4
+        self.y_train = self.output_training_data
 
         # Split data into training data and validation data
         self.sequential_x_validate = self.sequential_x_train[-28:]
@@ -88,9 +88,8 @@ class DataForTraining:
         self.y_validate = self.y_train[-28:]
         self.y_train = self.y_train[:-28]
 
-
     def __del__(self):
-        print('DataForTraining object released.')
+        print('-------------------------------')
 
 class ExcelConnection:
     def __init__(self):
@@ -175,15 +174,39 @@ class ExcelConnection:
         input_file.close()
         output_file.close()
 
+    def explore_data(self):
+        output_index_at_decision = MeaningsAtIndecies.get_output_meanings()
+        for index, name in output_index_at_decision.items():
+            print(f"{name}:")
+            data_obj = DataForTraining(index, 1)
+            decisions = data_obj.y_train
+            for decision in data_obj.y_validate:
+                decisions.append(decision)
+
+            num0 = 0
+            num1 = 0
+            for dec in decisions:
+                if dec[0] == 0:
+                    num0 += 1
+                elif dec[0] == 1:
+                    num1 += 1
+
+            print(f"\tThe number of decision 1 chosen {round(num1/len(decisions)*100)}%")
+            print(f"\tThe number of decision 0 chosen {round(num0/len(decisions)*100)}%")
+
+class BuildCVS(DataForTraining):
+    def make_needed_csv(self):
+        name = MeaningsAtIndecies.get_output_meanings()
+        name = name[self.decision_index]
+        header = [name]
+        namein = name + 'Train.csv'
+        nameout = name + 'Val.csv'
+
+        data = pd.DataFrame(self.y_train, columns=header)
+        data.to_csv(namein, index=False)
+        data = pd.DataFrame(self.y_validate, columns=header)
+        data.to_csv(nameout, index=False)
+
 if __name__ == '__main__':
-    obj = DataForTraining(0)
-    print('Layer 1:')
-    print(obj.big5_x_train[:5])
-    print('Layer 2:')
-    print(obj.layer2_x_train[:5])
-    print('Layer 3:')
-    print(obj.layer3_x_train[:5])
-    print('Layer 4:')
-    print(obj.layer4_x_train[:5])
-    print('Output later:')
-    print(obj.y_train[:5])
+    print(pd.read_csv('3aVal.csv'))
+
