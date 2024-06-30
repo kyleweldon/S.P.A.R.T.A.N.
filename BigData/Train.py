@@ -6,6 +6,8 @@
 # TODO: Rename variables so they all make sense/fully organize code
 # TODO: Add L2 Regularization
 # TODO: Instead of inheriting the class data, have it create its own instantiation of it
+# TODO: Add shapely explination
+# TODO: Build Jupiter notebook to expalin all code and findings
 ####################################################################
 
 import os
@@ -23,6 +25,8 @@ from tensorflow.keras.utils import to_categorical
 
 from sklearn.cluster import KMeans
 
+import shap
+
 def train():
     ai_obj = ArtificialIntelligence(model_type='Scenario 1 ',
                                     print_predictions=True,
@@ -30,6 +34,10 @@ def train():
 
 
 class Data():
+    '''
+    This class organizes and controls all data
+    including data filtering and reading and writing data to and from files.
+    '''
     def __init__(self, model_type, training_model=False, raw_data=False):
         if raw_data:
             self.excel_file = 'Data/RawData.xlsx'
