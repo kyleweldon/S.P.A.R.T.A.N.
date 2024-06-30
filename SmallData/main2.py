@@ -3,8 +3,8 @@
 #############################################
 
 ################# Needs Doing list for entire project ##############
-# TODO: Try clustering the data from the total combined values and see how they relate
-#############################################################
+# TODO: Create more dense layers for the model and epochs
+####################################################################
 
 import os
 # Supress TensorFlow messages
@@ -21,7 +21,6 @@ from tensorflow.keras import layers
 from sklearn.cluster import KMeans
 
 class Data:
-
     def __init__(self, decision='3a', sums=True):
         self.Big5_train = pd.read_csv('Data/Big5Train.csv').to_numpy()
         self.Big5_val = pd.read_csv('Data/Big5Val.csv').to_numpy()
@@ -35,9 +34,9 @@ class Data:
         self.Purple11_train = pd.read_csv('Data/Purple11Train.csv').to_numpy()
         self.Purple11_val = pd.read_csv('Data/Purple11Val.csv').to_numpy()
 
-        path = f"Data/{decision}Train.csv"
+        path = f"SmallData/Data/{decision}Train.csv"
         self.Y_train = pd.read_csv(path).to_numpy()
-        path = f"Data/{decision}Val.csv"
+        path = f"SmallData/Data/{decision}Val.csv"
         self.Y_val = pd.read_csv(path).to_numpy()
 
         self.X_train = np.array(None)
@@ -56,6 +55,7 @@ class Data:
             Purple11_val = np.sum(self.Purple11_val, axis=1).reshape(28, 1)
 
             self.X_train = np.concatenate((Big5_train, DMS_train, Scores_train, Purple11_train), axis=1)
+            self.X_val = np.concatenate((Big5_val, DMS_val, Scores_val, Purple11_val), axis=1)
 
     def build_X_data_from_clusters(self, Big5_train_labels, DMS_train_labels, Scores_train_labels, Purple11_train_labels):
         X = []
@@ -109,6 +109,20 @@ class ArtificialIntelligence(Data):
 
         super().build_X_data_from_clusters(Big5_train_labels, DMS_train_labels, Scores_train_labels, Purple11_train_labels)
 
+    def sums_clustering(self):
+        kmeans = KMeans(n_clusters=2)
+        kmeans.fit(self.X_train)
+        # centroids = kmeans.cluster_centers_
+        X_train_labels = kmeans.labels_
+        X_train_labels = np.array(X_train_labels)
+        self.X_train = np.reshape(X_train_labels, (200, 1))
+
+        kmeans = KMeans(n_clusters=2)
+        kmeans.fit(self.X_val)
+        # centroids = kmeans.cluster_centers_
+        X_val_labels = kmeans.labels_
+        X_val_labels = np.array(X_val_labels)
+        self.X_val = np.reshape(X_val_labels, (28, 1))
 
     def build_and_compile_model(self):
 
@@ -124,17 +138,20 @@ class ArtificialIntelligence(Data):
             print('No training data.')
             exit(69)
 
-        print('Input:\t\t\t\t\tExpected Output:')
-        temp1 = self.X_train.tolist()
-        temp2 = self.Y_train.tolist()
-        for i in range(200):
-            print(f"{temp1[i][0]} {temp1[i][1]} {temp1[i][2]} {temp1[i][3]}\t\t\t{temp2[i][0]}")
+        # print('Input:\t\t\t\t\tExpected Output:')
+        # temp1 = self.X_train.tolist()
+        # temp2 = self.Y_train.tolist()
+        # for i in range(200):
+        #     print(f"{temp1[i][0]}\t\t\t{temp2[i][0]}") # {temp1[i][1]} {temp1[i][2]} {temp1[i][3]}
 
         self.model.fit(self.X_train, self.Y_train,
                        batch_size=200, epochs=10, verbose=1, validation_split=0.2)
 
+        # self.model.save('TestingModel.keras')
+
 if __name__ == '__main__':
-    ai = ArtificialIntelligence()
-    #ai.centroid_clustering()
+    ai = ArtificialIntelligence(sums=False)
+    ai.centroid_clustering()
+    # ai.sums_clustering()
     ai.build_and_compile_model()
     ai.train_model()

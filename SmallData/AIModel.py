@@ -9,13 +9,11 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 from tensorflow.keras.layers import Input, Dense, concatenate
 from tensorflow.keras.models import Model
-from tensorflow.keras import layers
 from sklearn.cluster import KMeans
 import numpy as np
 import shap
 import MeaningsAtIndecies
-from Data.DataConnection import DataForTraining
-from keras_tuner import HyperModel
+from SmallData.Data.DataConnection import DataForTraining
 from keras_tuner.tuners import RandomSearch
 
 

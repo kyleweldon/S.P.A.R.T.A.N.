@@ -4,7 +4,6 @@
 
 import AIModel
 import MeaningsAtIndecies
-import numpy as np
 
 ################### Questions/Talking points for next meeting ##########################
 '''

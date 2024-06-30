@@ -3,7 +3,7 @@
 #############################################
 
 import openpyxl
-import MeaningsAtIndecies
+from SmallData import MeaningsAtIndecies
 import pandas as pd
 
 class DataForTraining:
@@ -93,7 +93,7 @@ class DataForTraining:
 
 class ExcelConnection:
     def __init__(self):
-        self.excel_file_path = "C:/KyleWeldon/Projects/ThinkTank/S.P.A.R.T.A.N/Data/Data.xlsx"
+        self.excel_file_path = "/SmallData/Data/Data.xlsx"
         self.data = []
 
         # Gather data from the Excel file
