@@ -28,7 +28,7 @@ from sklearn.cluster import KMeans
 import shap
 
 def train():
-    ai_obj = ArtificialIntelligence(model_type='Scenario 1 ',
+    ai_obj = ArtificialIntelligence(model_type='all',
                                     print_predictions=True,
                                     write_to_file=False)
 
@@ -229,18 +229,19 @@ class ArtificialIntelligence():
                            metrics=['accuracy'])
 
         self.model.fit(self.data_obj.X_train, self.data_obj.multi_Y_train, epochs=10, batch_size=32)
+        self.model.save('Test.keras')
 
+        if False:
+            predictions = self.model.predict(self.data_obj.X_val, verbose=0)
+            if self.kwargs['print_predictions']:
+                for i in range(len(predictions)):
+                    print(f"Person {i + 1}:")
+                    for j in range(len(predictions[i])):
+                        print(f"\tScenario {j + 1}:")
+                        print(f"\t\t{predictions[i][j]} -> {self.data_obj.multi_Y_val[i][j]}")
 
-        predictions = self.model.predict(self.data_obj.X_val, verbose=0)
-        if self.kwargs['print_predictions']:
-            for i in range(len(predictions)):
-                print(f"Person {i + 1}:")
-                for j in range(len(predictions[i])):
-                    print(f"\tScenario {j + 1}:")
-                    print(f"\t\t{predictions[i][j]} -> {self.data_obj.multi_Y_val[i][j]}")
-
-        if self.kwargs['write_to_file']:
-            self.data_obj.write_multi_output_to_csv(predictions)
+            if self.kwargs['write_to_file']:
+                self.data_obj.write_multi_output_to_csv(predictions)
 
     def single_output_model(self):
         inputs = Input(shape=(self.data_obj.X_train.shape[1],))
@@ -270,7 +271,7 @@ class ArtificialIntelligence():
         print()
 
 if __name__ == '__main__':
-    if False:
+    if True:
         train()
 
     if True:
