@@ -18,14 +18,17 @@ import numpy as np
 import pandas as pd
 
 import tensorflow as tf
-from tensorflow.keras.layers import Input, Dense, Concatenate, Reshape
+from tensorflow.keras.layers import Input,Dense, Concatenate, Reshape
 from tensorflow.keras.models import Model
 from tensorflow.keras import layers
 from tensorflow.keras.utils import to_categorical
-
-from sklearn.cluster import KMeans
+from tensorflow.keras.regularizers import l2
 
 import shap
+
+import sklearn
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.metrics import accuracy_score
 
 def train():
     ai_obj = ArtificialIntelligence(model_type='all',
@@ -272,7 +275,129 @@ class ArtificialIntelligence():
 
 if __name__ == '__main__':
     if True:
-        train()
+        df = pd.read_csv('Data/FilteredData.csv')
+        # Column tites for all the output data
+        output_columns = ['Scenario 1 ',
+                          'Unnamed: 40',
+                          'Scenario 2 ',
+                          'Unnamed: 42',
+                          'Scenario 3 ',
+                          'Unnamed: 44',
+                          'Scenario 4',
+                          'Unnamed: 46',
+                          'Scenario 5 ',
+                          'Unnamed: 48']
+
+
+        def classiy_and_catigorize(column):
+            return to_categorical([0 if x <= 3 else 1 if x <= 6 else 2 for x in column])
+
+
+        columns = df[output_columns].to_numpy().T  # The 'T' is to transpose the array
+
+        S1P1, S1P2, S2P1, S2P2, S3P1, S3P2, S4P1, S4P2, S5P1, S5P2 = [classiy_and_catigorize(col) for col in columns]
+        all_situations = [S1P1, S1P2, S2P1, S2P2, S3P1, S3P2, S4P1, S4P2, S5P1, S5P2]
+
+
+        def split(array):
+            return array[:800], array[800:]
+
+
+        S1P1_train, S1P1_val = split(S1P1)
+        S1P2_train, S1P2_val = split(S1P2)
+        S2P1_train, S2P1_val = split(S2P1)
+        S2P2_train, S2P2_val = split(S2P2)
+        S3P1_train, S3P1_val = split(S3P1)
+        S3P2_train, S3P2_val = split(S3P2)
+        S4P1_train, S4P1_val = split(S4P1)
+        S4P2_train, S4P2_val = split(S4P2)
+        S5P1_train, S5P1_val = split(S5P1)
+        S5P2_train, S5P2_val = split(S5P2)
+
+        # Column titles used for this input set
+        input_columns1 = ['MAx1', 'Max2', 'Max3']
+        input_columns2 = ['Q105_1', 'Q105_2', 'Q105_3', 'Q105_4', 'Q105_5', 'Q105_6', 'Q105_7', 'Q105_8', 'Q105_9',
+                          'Q105_10', 'Q105_11', 'Q105_12', 'Q105_13', 'Q105_14', 'Q105_15', 'Q105_16', 'Q105_17',
+                          'Q105_18', 'Q105_19', 'Q105_20', 'Q105_21', 'Q105_22', 'Q105_23', 'Q105_24', 'Q105_25',
+                          'Q105_26', 'Q105_27', 'Q105_28', 'Q105_29', 'Q105_30', 'Q105_31', 'Q105_32', 'Q105_33',
+                          'Q105_34']
+
+        input_df1 = df[input_columns1]
+        input1_X_values = input_df1.to_numpy()
+        input_df2 = df[input_columns2]
+        input2_X_values = input_df2.to_numpy()
+
+        layer1_X_train = input1_X_values[:800]
+        layer1_X_val = input1_X_values[800:]
+        layer2_X_train = input2_X_values[:800]
+        layer2_X_val = input2_X_values[800:]
+
+
+
+        input1 = Input(shape=(3,), name='InputLayer1')
+
+        hidden1_input1 = Dense(256, activation='relu', kernel_regularizer=l2(0.01), name='DenseOne_Input1')(input1)
+        hidden2_input1 = Dense(128, activation='relu', kernel_regularizer=l2(0.01), name='DenseTwo_Input1')(
+            hidden1_input1)
+        hidden3_input1 = Dense(64, activation='relu', kernel_regularizer=l2(0.01), name='DenseThree_Input1')(
+            hidden2_input1)
+        hidden4_input1 = Dense(32, activation='relu', kernel_regularizer=l2(0.01), name='DenseFour_Input1')(
+            hidden3_input1)
+        hidden5_input1 = Dense(16, activation='relu', kernel_regularizer=l2(0.01), name='DenseFive_Input1')(
+            hidden4_input1)
+
+        # input2 = Input(shape=(34,), name='InputLayer2')
+        #
+        # hidden1_input2 = Dense(256, activation='relu', kernel_regularizer=l2(0.01), name='DenseOne_Input2')(input2)
+        # hidden2_input2 = Dense(128, activation='relu', kernel_regularizer=l2(0.01), name='DenseTwo_Input2')(
+        #     hidden1_input2)
+        # hidden3_input2 = Dense(64, activation='relu', kernel_regularizer=l2(0.01), name='DenseThree_Input2')(
+        #     hidden2_input2)
+        # hidden4_input2 = Dense(32, activation='relu', kernel_regularizer=l2(0.01), name='DenseFour_Input2')(
+        #     hidden3_input2)
+        # hidden5_input2 = Dense(16, activation='relu', kernel_regularizer=l2(0.01), name='DenseFive_Input2')(
+        #     hidden4_input2)
+
+        # concatenated = Concatenate(name='ConcatinatedInput')([hidden5_input1, hidden5_input2])
+
+
+        def create_output_layer(name, input_layer):
+            return Dense(3, activation='softmax', name=name)(input_layer)
+
+
+        def itterate_situations_and_parts(num_itts=10):
+            scenerio = 1
+            sittos = []
+            for i in range(num_itts):
+                part = 1 if i % 2 == 0 else 2
+                sittos.append(f"S{scenerio}P{part}")
+                if part == 2: scenerio += 1
+            return sittos
+
+
+        outputs = [create_output_layer(name, hidden5_input1) for name in itterate_situations_and_parts()]
+
+        model = Model(inputs=input1, outputs=outputs, name='CustomizedDeepNeuralNetwork')
+
+        metrics = ['accuracy'] * 10
+
+        model.compile(loss='categorical_crossentropy',
+                      optimizer='adam',
+                      metrics=metrics)
+
+        model.fit(layer1_X_train, [S1P1_train, S1P2_train, S2P1_train,
+                                                     S2P2_train, S3P1_train, S3P2_train, S4P1_train,
+                                                     S4P2_train, S5P1_train, S5P2_train],
+                  epochs=10,
+                  batch_size=32,
+                  validation_data=(layer1_X_val, [S1P1_val, S1P2_val, S2P1_val,
+                                                                  S2P2_val, S3P1_val, S3P2_val, S4P1_val,
+                                                                  S4P2_val, S5P1_val, S5P2_val]))
+
+        print(len(layer1_X_train))
+        explainer = shap.Explainer(model, layer1_X_train)
+        # Explain the decision for all samples
+        shap_values = explainer(layer1_X_train, max_evals=50000)
 
     if True:
         pass
